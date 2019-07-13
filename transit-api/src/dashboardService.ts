@@ -1,23 +1,23 @@
 import { getDeparturesForStation, StationList, Departure } from "./rejseplanen";
 
 export interface DashboardData {
-    lyngby: Departure[],
-    kobenhavn: Departure[]
+    lyngby: Partial<Departure>[],
+    kobenhavn: Partial<Departure>[]
 }
 
 export const getDashboardData = async (): Promise<DashboardData> => {
     const departures = await getDeparturesForStation(StationList.BuddingeStation);
 
-    const lyngby: Departure[] = [];
-    const kobenhavn: Departure[] = [];
+    const lyngby: Partial<Departure>[] = [];
+    const kobenhavn: Partial<Departure>[] = [];
 
     let departure: Departure;
     for (let i = 0; i < departures.length; i++) {
         departure = departures[i];
         if (isLyngby(departure)) {
-            lyngby.push(departure);
+            lyngby.push(trimDeparture(departure));
         } else if (isKobenhavn(departure)) {
-            kobenhavn.push(departure);
+            kobenhavn.push(trimDeparture(departure));
         }
     }
 
@@ -89,4 +89,15 @@ const isKobenhavnB = (departure: Departure): boolean => {
     }
 
     return false;
+}
+
+const trimDeparture = (departure: Departure): Partial<Departure> => {
+    return {
+        time: departure.time,
+        line: departure.line,
+        direction: departure.direction
+            .replace('ø', 'oe')
+            .replace('æ', 'ae')
+            .replace('å', 'aa'),
+    };
 }
